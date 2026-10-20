@@ -23,3 +23,9 @@ const panel=viewport.children[1],menu=panel.children[1].children[0];menu.value='
 const obstruction=new THREE.Mesh(new THREE.BoxGeometry(1,1,1));obstruction.position.set(1,.5,1);furniture.add(obstruction);menu.value='a';menu.onchange();assert.equal(camera.position.x,4,'Do not jump into furniture');assert.equal(notifications,1);
 tour.zoom(.001);assert.equal(camera.fov,45);tour.zoom(100);assert.equal(camera.fov,85);tour.exit();assert(!tour.active);assert.equal(exited,1);
 console.log('PASS: fixed eye-level look, click threshold, pitch/FOV limits, room jumps, furniture obstruction and exit');
+
+const sampled=context.buildWalkPoints([{id:'room',label:'Room',x:0,z:0}],[{id:'hall',destination:'room',path:[[0,0],[2,0],[2,2]]}],.5);
+assert.equal(sampled.length,9,'Half-metre spacing follows both legs of the route');
+assert.equal(sampled.filter(p=>!p.route).length,1,'Room menu retains only named destinations');
+for(let i=1;i<sampled.length;i++){assert(Math.hypot(sampled[i].x-sampled[i-1].x,sampled[i].z-sampled[i-1].z)<=.50001);assert.equal(sampled[i].destination,'room');}
+assert.equal(new Set(sampled.map(p=>p.x+','+p.z)).size,sampled.length,'Shared route endpoints are not duplicated');

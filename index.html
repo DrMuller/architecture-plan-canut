@@ -5,7 +5,10 @@
 
 [hidden]{display:none!important}
 
-.walk-markers{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}.walk-point{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;border:0;background:none;color:white;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px;touch-action:none}.walk-point>span{display:grid;place-items:center;width:44px;height:32px;border:2px solid white;border-radius:50%;background:#48634ed9;box-shadow:0 3px 12px #0004;font-size:25px}.walk-point small{background:#263d2ee8;border-radius:4px;padding:5px 8px;font-size:10px;white-space:nowrap}.walk-point:hover>span,.walk-point:focus-visible>span{background:#294b32;transform:scale(1.12)}.walk-panel{position:absolute;bottom:18px;left:20px;right:76px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px;background:#fffffff0;border:1px solid #dce3d7;border-radius:9px;box-shadow:0 3px 20px #0002}.walk-location{font-size:11px;font-weight:600;margin-right:auto}.walk-panel label{font-size:10px;display:flex;align-items:center;gap:7px}.walk-panel select{width:160px;padding:8px;font-size:11px}.walk-panel button{border:1px solid #d4ddcd;background:#f3f6ee;border-radius:5px;padding:9px;font-size:10px}.walk-panel small{width:100%;color:#64725c;font-size:10px}.walkthrough .left-bottom,.walkthrough .nav-help,.walkthrough .arrange-toggle{display:none}.walkthrough canvas{cursor:grab}.walkthrough.looking canvas,.walkthrough.looking .walk-point{cursor:grabbing}.walk-flash{position:absolute;inset:0;background:#e9eee4;pointer-events:none;opacity:0;z-index:3}.walk-flash.jumping{animation:walk-jump .26s ease-out}@keyframes walk-jump{from{opacity:.75}to{opacity:0}}.view-bar{max-width:calc(100% - 40px);overflow-x:auto}@media(max-width:600px){.walk-panel{left:10px;right:60px;bottom:12px;padding:10px;gap:8px}.walk-location{width:100%}.walk-panel select{width:135px}.walk-panel small{font-size:9px}.walkthrough .view-bar{left:10px;top:12px}.walk-point small{font-size:9px}}@media(prefers-reduced-motion:reduce){.walk-flash.jumping{animation:none}}</style></head><body>
+.walk-markers{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}.walk-point{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;border:0;background:none;color:white;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px;touch-action:none}.walk-point>span{display:grid;place-items:center;width:44px;height:32px;border:2px solid white;border-radius:50%;background:#48634ed9;box-shadow:0 3px 12px #0004;font-size:25px}.walk-point small{background:#263d2ee8;border-radius:4px;padding:5px 8px;font-size:10px;white-space:nowrap}.walk-point:hover>span,.walk-point:focus-visible>span{background:#294b32;transform:scale(1.12)}.walk-panel{position:absolute;bottom:18px;left:20px;right:76px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px;background:#fffffff0;border:1px solid #dce3d7;border-radius:9px;box-shadow:0 3px 20px #0002}.walk-location{font-size:11px;font-weight:600;margin-right:auto}.walk-panel label{font-size:10px;display:flex;align-items:center;gap:7px}.walk-panel select{width:160px;padding:8px;font-size:11px}.walk-panel button{border:1px solid #d4ddcd;background:#f3f6ee;border-radius:5px;padding:9px;font-size:10px}.walk-panel small{width:100%;color:#64725c;font-size:10px}.walkthrough .left-bottom,.walkthrough .nav-help,.walkthrough .arrange-toggle{display:none}.walkthrough canvas{cursor:grab}.walkthrough.looking canvas,.walkthrough.looking .walk-point{cursor:grabbing}.walk-flash{position:absolute;inset:0;background:#e9eee4;pointer-events:none;opacity:0;z-index:3}.walk-flash.jumping{animation:walk-jump .26s ease-out}@keyframes walk-jump{from{opacity:.75}to{opacity:0}}.view-bar{max-width:calc(100% - 40px);overflow-x:auto}@media(max-width:600px){.walk-panel{left:10px;right:60px;bottom:12px;padding:10px;gap:8px}.walk-location{width:100%}.walk-panel select{width:135px}.walk-panel small{font-size:9px}.walkthrough .view-bar{left:10px;top:12px}.walk-point small{font-size:9px}}@media(prefers-reduced-motion:reduce){.walk-flash.jumping{animation:none}}
+
+/* Compact route dots with generous invisible tap targets. Labels appear on intent. */
+.walk-point{width:34px;height:34px;padding:0;justify-content:center;gap:0}.walk-point>span{width:14px;height:14px;border:2px solid #fff;border-radius:50%;background:#496b50e8;box-shadow:0 1px 5px #18302080;font-size:0}.walk-route-point>span{width:9px;height:9px;border-width:1.5px;background:#ffffffd9;box-shadow:0 1px 5px #183020b3}.walk-point small{position:absolute;top:32px;opacity:0;pointer-events:none;transition:opacity .12s;z-index:1}.walk-point:hover small,.walk-point:focus-visible small{opacity:1}.walk-point:hover>span,.walk-point:focus-visible>span{transform:scale(1.25);background:#486b50}.walk-point:focus-visible{border-radius:50%}</style></head><body>
 <header><a class="brand" href="#"><span class="mark">i.</span><span>IVRY <small>ATELIER CANUT</small></span></a><div class="project">LYON · CROIX-ROUSSE <span>Apartment study / 01</span></div><div class="header-actions"><button id="save-share" class="quiet">Save & share</button><button id="reset" class="quiet">↺ Reset finishes</button></div></header>
 <main><section id="viewport" aria-label="Interactive apartment model"><div class="scene-heading"><div class="eyebrow">A NEW PERSPECTIVE</div><h1>A canut, in every detail.</h1><p>Explore the space. Make it yours.</p></div><div class="view-bar" role="group" aria-label="Camera presets"><button class="active" data-view="overview">⌘ Overview</button><button data-view="living">Living space</button><button data-view="inside">Inside</button><button id="walk-start">Walkthrough</button><button data-view="plan">Floor plan</button></div><button id="arrange-toggle" class="arrange-toggle" aria-pressed="false">↔ Arrange furniture</button><div id="canvas-wrap"></div><div id="labels"></div><div id="loading">Building your apartment…</div><div class="left-bottom"><span class="live-dot"></span> MODEL IN METRES <span class="divider">/</span> <span id="status">Automatic cutaway</span></div><div class="nav-help">Drag to orbit <b>·</b> Scroll to zoom <b>·</b> Right-drag to pan</div><div class="zoom"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="home" aria-label="Reset camera">⌂</button></div><div id="toast" role="status"></div></section>
 <aside><div class="aside-top"><span class="eyebrow">YOUR MATERIAL PALETTE</span><h2>Shape the atmosphere.</h2><p>Finishes update live in the model.</p></div><div class="tabs"><button class="active" data-tab="materials">Materials</button><button data-tab="space">Space & view</button><button data-tab="layout">Furniture</button><button data-tab="plan">The plan</button></div>
@@ -56143,6 +56146,18 @@ function walkDirection(yaw,pitch){const c=Math.cos(pitch);return {x:Math.sin(yaw
 function turnHead(yaw,pitch,dx,dy){return {yaw:yaw-dx*.004,pitch:Math.max(-1.25,Math.min(1.25,pitch+dy*.0035))};}
 function isWalkClick(maxDistance){return maxDistance<=6;}
 
+// Sample explicit room/doorway routes, keeping the named room stops in the menu.
+function buildWalkPoints(destinations,routes,spacing=.50){
+ const result=destinations.map(p=>({...p}));
+ for(const route of routes){const destination=destinations.find(p=>p.id===route.destination);if(!destination)continue;let count=0;
+  for(let i=1;i<route.path.length;i++){const a=route.path[i-1],b=route.path[i],steps=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/spacing));
+   for(let j=0;j<=steps;j++){const x=a[0]+(b[0]-a[0])*j/steps,z=a[1]+(b[1]-a[1])*j/steps;if(result.some(p=>Math.hypot(p.x-x,p.z-z)<.24))continue;
+    result.push({id:'path-'+route.id+'-'+count++,label:destination.label,destination:destination.id,route:true,step:count,x,z});
+   }
+  }
+ }return result;
+}
+
 function createWalkthrough({camera,canvas,viewport,architecture,furniture,points,onEnter,onExit,notify}){
  const eyeHeight=1.65,ray=new THREE.Raycaster(),bounds=new THREE.Box3();
  let active=false,yaw=0,pitch=-.22,current=null,gesture=null,lastMarkers=0;
@@ -56151,16 +56166,16 @@ function createWalkthrough({camera,canvas,viewport,architecture,furniture,points
  const location=document.createElement('span');location.className='walk-location';location.setAttribute('role','status');
  const label=document.createElement('label');label.textContent='Jump to ';const menu=document.createElement('select');menu.setAttribute('aria-label','Walkthrough destination');label.append(menu);
  const exitButton=document.createElement('button');exitButton.textContent='Exit walkthrough';exitButton.onclick=()=>exit();
- const hint=document.createElement('small');hint.textContent='Click a floor point · Drag to look · Arrow keys to turn · Esc to exit';
+ const hint=document.createElement('small');hint.textContent='Click a floor dot · Drag to look · Arrow keys to turn · Esc to exit';
  panel.append(location,label,exitButton,hint);viewport.append(panel);
  const flash=document.createElement('div');flash.className='walk-flash';viewport.append(flash);
- const entries=points.map(point=>{const button=document.createElement('button');button.className='walk-point';button.dataset.walkId=point.id;button.setAttribute('aria-label','Walk to '+point.label);button.title=point.label;const ring=document.createElement('span');ring.textContent='⌃';const text=document.createElement('small');text.textContent=point.label;button.append(ring,text);button.onclick=e=>{if(e.detail===0)jump(point.id);};markerLayer.append(button);const option=document.createElement('option');option.value=point.id;option.textContent=point.label;menu.append(option);return {...point,button,option,position:new THREE.Vector3(point.x,.08,point.z)};});
+ const entries=points.map(point=>{const button=document.createElement('button');button.className='walk-point'+(point.route?' walk-route-point':'');button.dataset.walkId=point.id;button.setAttribute('aria-label',point.route?'Move along '+point.label+' · point '+point.step:'Walk to '+point.label);button.title=point.label;const ring=document.createElement('span');ring.setAttribute('aria-hidden','true');const text=document.createElement('small');text.textContent=point.label;button.append(ring,text);button.onclick=e=>{if(e.detail===0)jump(point.id);};markerLayer.append(button);let option=null;if(!point.route){option=document.createElement('option');option.value=point.id;option.textContent=point.label;menu.append(option);}return {...point,button,option,position:new THREE.Vector3(point.x,.035,point.z)};});
  const visible=object=>{for(let p=object;p;p=p.parent)if(!p.visible)return false;return true;};
- function obstacles(){const result=[];furniture.updateWorldMatrix(true,true);furniture.traverse(mesh=>{if(!mesh.isMesh||!visible(mesh))return;bounds.setFromObject(mesh);if(bounds.max.y>=.16&&bounds.min.y<=eyeHeight+.15)result.push(bounds.clone());});return result;}
+ function obstacles(){const result=[];architecture.updateWorldMatrix(true,true);furniture.updateWorldMatrix(true,true);for(const root of [architecture,furniture])root.traverse(mesh=>{if(!mesh.isMesh||!visible(mesh))return;bounds.setFromObject(mesh);if(bounds.max.y>=.16&&bounds.min.y<=eyeHeight+.15)result.push(bounds.clone());});return result;}
  function occupied(point,boxes=obstacles()){return boxes.some(b=>point.x>b.min.x-.10&&point.x<b.max.x+.10&&point.z>b.min.z-.10&&point.z<b.max.z+.10);}
  function orient(){const d=walkDirection(yaw,pitch);camera.lookAt(camera.position.x+d.x,camera.position.y+d.y,camera.position.z+d.z);camera.updateMatrixWorld();}
- function jump(id,{first=false}={}){const point=entries.find(p=>p.id===id);if(!point)return false;if(occupied(point)){notify('This point is occupied by furniture. Choose another spot.');menu.value=current?.id||'';return false;}
-  current=point;camera.position.set(point.x,eyeHeight,point.z);orient();location.textContent='Walkthrough · '+point.label;menu.value=point.id;lastMarkers=0;
+ function jump(id,{first=false}={}){const point=entries.find(p=>p.id===id);if(!point)return false;if(occupied(point)){notify('This point is occupied by furniture. Choose another spot.');menu.value=current?.destination||current?.id||'';return false;}
+  current=point;camera.position.set(point.x,eyeHeight,point.z);orient();location.textContent='Walkthrough · '+point.label;menu.value=point.destination||point.id;lastMarkers=0;
   if(!first&&!matchMedia('(prefers-reduced-motion: reduce)').matches){flash.classList.remove('jumping');void flash.offsetWidth;flash.classList.add('jumping');}return true;
  }
  function start(){if(active)return;const point=entries.find(p=>!occupied(p));if(!point){notify('Move furniture to clear a walkthrough point.');return;}
@@ -56170,7 +56185,7 @@ function createWalkthrough({camera,canvas,viewport,architecture,furniture,points
  menu.onchange=()=>jump(menu.value);
  function update(time){if(!active)return;orient();if(time-lastMarkers<120)return;lastMarkers=time;
   architecture.updateWorldMatrix(true,true);furniture.updateWorldMatrix(true,true);const rect=canvas.getBoundingClientRect(),boxes=obstacles();
-  for(const point of entries){const blocked=occupied(point,boxes);point.option.disabled=blocked;let show=point!==current&&!blocked;const projected=point.position.clone().project(camera);
+  for(const point of entries){const blocked=occupied(point,boxes);if(point.option)point.option.disabled=blocked;let show=point!==current&&!blocked&&point.position.distanceTo(camera.position)<7;const projected=point.position.clone().project(camera);
    show=show&&projected.z>-1&&projected.z<1&&Math.abs(projected.x)<.94&&Math.abs(projected.y)<.85;
    if(show){const direction=point.position.clone().sub(camera.position),distance=direction.length();ray.set(camera.position,direction.normalize());ray.far=distance-.10;show=!ray.intersectObjects([architecture,furniture],true).some(hit=>visible(hit.object)&&!(hit.object.material.transparent&&hit.object.material.opacity<.5));}
    point.button.hidden=!show;if(show){point.button.style.left=(projected.x*.5+.5)*rect.width+'px';point.button.style.top=(-projected.y*.5+.5)*rect.height+'px';}
@@ -56482,14 +56497,27 @@ window.ivryDesign.ready=designRecovery;window.dispatchEvent(new Event('ivry-desi
 
 // Walkthrough is a local viewing mode; it never changes the shared design.
 walkthrough=createWalkthrough({camera:perspective,canvas:renderer.domElement,viewport:$('viewport'),architecture,furniture:furn,notify:toast,
-points:[
+points:buildWalkPoints([
 {id:'living',label:'Living room',x:10.8,z:6.45},{id:'dining',label:'Dining area',x:11.25,z:6.6},
 {id:'kitchen',label:'Kitchen aisle',x:11.55,z:2.9},{id:'worktop',label:'Kitchen worktop',x:12,z:1.18},
 {id:'entry',label:'Entry',x:9.8,z:2.6},{id:'front-door',label:'Entrance hall',x:8.05,z:2.8},
 {id:'bathroom',label:'Bathroom',x:9.65,z:1.4},{id:'wc',label:'WC',x:8.0,z:1.45},
 {id:'hall-east',label:'Hall · living end',x:8.0,z:4.25},{id:'hall-west',label:'Hall · bedrooms',x:5.0,z:4.35},
 {id:'bedroom-1',label:'Bedroom 1',x:2.5,z:5.95},{id:'bedroom-2',label:'Bedroom 2',x:4.0,z:6.3},
-{id:'office',label:'Office',x:7.0,z:6.2},{id:'shower',label:'Shower room',x:3.6,z:4.35}],
+{id:'office',label:'Office',x:7.0,z:6.2},{id:'shower',label:'Shower room',x:3.6,z:4.35}],[
+{id:'living-kitchen',destination:'kitchen',path:[[10.8,6.45],[11.25,6.6],[11.25,5.7],[11.55,4.25],[11.55,2.9]]},
+{id:'dining',destination:'dining',path:[[11.25,6.6],[11.25,8.1],[12.6,8.1]]},
+{id:'worktop',destination:'worktop',path:[[11.55,2.9],[11.55,1.18],[12,1.18],[13.4,1.18]]},
+{id:'hall',destination:'hall-east',path:[[11.55,4.25],[8.05,4.25],[5,4.35]]},
+{id:'entrance',destination:'front-door',path:[[8.05,4.25],[8.05,2.8],[8.05,2.1]]},
+{id:'wc-path',destination:'wc',path:[[8.05,2.1],[8,1.45]]},
+{id:'entry-path',destination:'entry',path:[[8.05,2.8],[9.25,2.8],[9.8,2.6]]},
+{id:'bath-path',destination:'bathroom',path:[[9.8,2.6],[9.65,2.1],[9.65,1.4]]},
+{id:'shower',destination:'shower',path:[[5,4.35],[3.6,4.35],[1.3,4.35]]},
+{id:'bedroom-1',destination:'bedroom-1',path:[[2.5,4.35],[2.5,5.95],[2.5,7.9]]},
+{id:'bedroom-2',destination:'bedroom-2',path:[[5,4.35],[5.1,4.9],[5.1,5.8],[4,5.8],[4,7.5]]},
+{id:'office',destination:'office',path:[[6.2,4.31],[6.2,5.8],[7,6.2],[7.2,7.3]]}
+]),
 onEnter:()=>{walkReturnView=presets[activeView]?activeView:'overview';setArranging(false);transition=null;camera=perspective;controls.object=camera;controls.enabled=false;activeView='walkthrough';$('viewport').classList.add('interior');$('walk-start').classList.add('active');document.querySelectorAll('[data-view]').forEach(b=>b.classList.remove('active'));$('status').textContent='Eye level · 1.65 m';document.querySelector('.nav-help').textContent='Drag to look around · Click a floor point to move';},
 onExit:restore=>{controls.target.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(3));controls.enabled=true;$('walk-start').classList.remove('active');$('wall-mode').onchange();document.querySelector('.nav-help').textContent='Drag to orbit · Scroll to zoom · Right-drag to pan';if(restore)setView(walkReturnView);}
 });

@@ -1,4 +1,4 @@
-import {createWalkthrough} from './walkthrough.js';
+import {createWalkthrough,buildWalkPoints} from './walkthrough.js';
 import {DESIGN_FORMAT,MAX_DESIGN_BYTES,validateDesign,designFingerprint} from './design-format.js';
 import * as THREE from 'three';
 import {OrbitControls} from './vendor/OrbitControls.js';
@@ -295,14 +295,27 @@ window.ivryDesign.ready=designRecovery;window.dispatchEvent(new Event('ivry-desi
 
 // Walkthrough is a local viewing mode; it never changes the shared design.
 walkthrough=createWalkthrough({camera:perspective,canvas:renderer.domElement,viewport:$('viewport'),architecture,furniture:furn,notify:toast,
-points:[
+points:buildWalkPoints([
 {id:'living',label:'Living room',x:10.8,z:6.45},{id:'dining',label:'Dining area',x:11.25,z:6.6},
 {id:'kitchen',label:'Kitchen aisle',x:11.55,z:2.9},{id:'worktop',label:'Kitchen worktop',x:12,z:1.18},
 {id:'entry',label:'Entry',x:9.8,z:2.6},{id:'front-door',label:'Entrance hall',x:8.05,z:2.8},
 {id:'bathroom',label:'Bathroom',x:9.65,z:1.4},{id:'wc',label:'WC',x:8.0,z:1.45},
 {id:'hall-east',label:'Hall · living end',x:8.0,z:4.25},{id:'hall-west',label:'Hall · bedrooms',x:5.0,z:4.35},
 {id:'bedroom-1',label:'Bedroom 1',x:2.5,z:5.95},{id:'bedroom-2',label:'Bedroom 2',x:4.0,z:6.3},
-{id:'office',label:'Office',x:7.0,z:6.2},{id:'shower',label:'Shower room',x:3.6,z:4.35}],
+{id:'office',label:'Office',x:7.0,z:6.2},{id:'shower',label:'Shower room',x:3.6,z:4.35}],[
+{id:'living-kitchen',destination:'kitchen',path:[[10.8,6.45],[11.25,6.6],[11.25,5.7],[11.55,4.25],[11.55,2.9]]},
+{id:'dining',destination:'dining',path:[[11.25,6.6],[11.25,8.1],[12.6,8.1]]},
+{id:'worktop',destination:'worktop',path:[[11.55,2.9],[11.55,1.18],[12,1.18],[13.4,1.18]]},
+{id:'hall',destination:'hall-east',path:[[11.55,4.25],[8.05,4.25],[5,4.35]]},
+{id:'entrance',destination:'front-door',path:[[8.05,4.25],[8.05,2.8],[8.05,2.1]]},
+{id:'wc-path',destination:'wc',path:[[8.05,2.1],[8,1.45]]},
+{id:'entry-path',destination:'entry',path:[[8.05,2.8],[9.25,2.8],[9.8,2.6]]},
+{id:'bath-path',destination:'bathroom',path:[[9.8,2.6],[9.65,2.1],[9.65,1.4]]},
+{id:'shower',destination:'shower',path:[[5,4.35],[3.6,4.35],[1.3,4.35]]},
+{id:'bedroom-1',destination:'bedroom-1',path:[[2.5,4.35],[2.5,5.95],[2.5,7.9]]},
+{id:'bedroom-2',destination:'bedroom-2',path:[[5,4.35],[5.1,4.9],[5.1,5.8],[4,5.8],[4,7.5]]},
+{id:'office',destination:'office',path:[[6.2,4.31],[6.2,5.8],[7,6.2],[7.2,7.3]]}
+]),
 onEnter:()=>{walkReturnView=presets[activeView]?activeView:'overview';setArranging(false);transition=null;camera=perspective;controls.object=camera;controls.enabled=false;activeView='walkthrough';$('viewport').classList.add('interior');$('walk-start').classList.add('active');document.querySelectorAll('[data-view]').forEach(b=>b.classList.remove('active'));$('status').textContent='Eye level · 1.65 m';document.querySelector('.nav-help').textContent='Drag to look around · Click a floor point to move';},
 onExit:restore=>{controls.target.copy(camera.position).add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(3));controls.enabled=true;$('walk-start').classList.remove('active');$('wall-mode').onchange();document.querySelector('.nav-help').textContent='Drag to orbit · Scroll to zoom · Right-drag to pan';if(restore)setView(walkReturnView);}
 });

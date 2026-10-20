@@ -43,6 +43,6 @@ npm run build
 
 ## Walkthrough
 
-Choose **Walkthrough** in the camera bar for an eye-level visit. Click a visible floor marker to jump, or use **Jump to** to enter another room. Drag (or swipe) to turn your head; arrow keys also turn the view. Scroll or use +/− to change the field of view. **Exit walkthrough**, Esc, or another camera preset returns to orbit controls.
+Choose **Walkthrough** in the camera bar for an eye-level visit. Click the small floor dots, spaced about half a metre along the room and corridor routes, to jump, or use **Jump to** to enter another room. Drag (or swipe) to turn your head; arrow keys also turn the view. Scroll or use +/− to change the field of view. **Exit walkthrough**, Esc, or another camera preset returns to orbit controls.
 
 Walls and ceilings remain full in walkthrough mode. Points hidden by walls are not shown, and points occupied by moved furniture are disabled. Navigation is local to each visitor and does not change the shared design.

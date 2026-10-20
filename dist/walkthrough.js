@@ -4,6 +4,18 @@ export function walkDirection(yaw,pitch){const c=Math.cos(pitch);return {x:Math.
 export function turnHead(yaw,pitch,dx,dy){return {yaw:yaw-dx*.004,pitch:Math.max(-1.25,Math.min(1.25,pitch+dy*.0035))};}
 export function isWalkClick(maxDistance){return maxDistance<=6;}
 
+// Sample explicit room/doorway routes, keeping the named room stops in the menu.
+export function buildWalkPoints(destinations,routes,spacing=.50){
+ const result=destinations.map(p=>({...p}));
+ for(const route of routes){const destination=destinations.find(p=>p.id===route.destination);if(!destination)continue;let count=0;
+  for(let i=1;i<route.path.length;i++){const a=route.path[i-1],b=route.path[i],steps=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/spacing));
+   for(let j=0;j<=steps;j++){const x=a[0]+(b[0]-a[0])*j/steps,z=a[1]+(b[1]-a[1])*j/steps;if(result.some(p=>Math.hypot(p.x-x,p.z-z)<.24))continue;
+    result.push({id:'path-'+route.id+'-'+count++,label:destination.label,destination:destination.id,route:true,step:count,x,z});
+   }
+  }
+ }return result;
+}
+
 export function createWalkthrough({camera,canvas,viewport,architecture,furniture,points,onEnter,onExit,notify}){
  const eyeHeight=1.65,ray=new THREE.Raycaster(),bounds=new THREE.Box3();
  let active=false,yaw=0,pitch=-.22,current=null,gesture=null,lastMarkers=0;
@@ -12,16 +24,16 @@ export function createWalkthrough({camera,canvas,viewport,architecture,furniture
  const location=document.createElement('span');location.className='walk-location';location.setAttribute('role','status');
  const label=document.createElement('label');label.textContent='Jump to ';const menu=document.createElement('select');menu.setAttribute('aria-label','Walkthrough destination');label.append(menu);
  const exitButton=document.createElement('button');exitButton.textContent='Exit walkthrough';exitButton.onclick=()=>exit();
- const hint=document.createElement('small');hint.textContent='Click a floor point · Drag to look · Arrow keys to turn · Esc to exit';
+ const hint=document.createElement('small');hint.textContent='Click a floor dot · Drag to look · Arrow keys to turn · Esc to exit';
  panel.append(location,label,exitButton,hint);viewport.append(panel);
  const flash=document.createElement('div');flash.className='walk-flash';viewport.append(flash);
- const entries=points.map(point=>{const button=document.createElement('button');button.className='walk-point';button.dataset.walkId=point.id;button.setAttribute('aria-label','Walk to '+point.label);button.title=point.label;const ring=document.createElement('span');ring.textContent='⌃';const text=document.createElement('small');text.textContent=point.label;button.append(ring,text);button.onclick=e=>{if(e.detail===0)jump(point.id);};markerLayer.append(button);const option=document.createElement('option');option.value=point.id;option.textContent=point.label;menu.append(option);return {...point,button,option,position:new THREE.Vector3(point.x,.08,point.z)};});
+ const entries=points.map(point=>{const button=document.createElement('button');button.className='walk-point'+(point.route?' walk-route-point':'');button.dataset.walkId=point.id;button.setAttribute('aria-label',point.route?'Move along '+point.label+' · point '+point.step:'Walk to '+point.label);button.title=point.label;const ring=document.createElement('span');ring.setAttribute('aria-hidden','true');const text=document.createElement('small');text.textContent=point.label;button.append(ring,text);button.onclick=e=>{if(e.detail===0)jump(point.id);};markerLayer.append(button);let option=null;if(!point.route){option=document.createElement('option');option.value=point.id;option.textContent=point.label;menu.append(option);}return {...point,button,option,position:new THREE.Vector3(point.x,.035,point.z)};});
  const visible=object=>{for(let p=object;p;p=p.parent)if(!p.visible)return false;return true;};
- function obstacles(){const result=[];furniture.updateWorldMatrix(true,true);furniture.traverse(mesh=>{if(!mesh.isMesh||!visible(mesh))return;bounds.setFromObject(mesh);if(bounds.max.y>=.16&&bounds.min.y<=eyeHeight+.15)result.push(bounds.clone());});return result;}
+ function obstacles(){const result=[];architecture.updateWorldMatrix(true,true);furniture.updateWorldMatrix(true,true);for(const root of [architecture,furniture])root.traverse(mesh=>{if(!mesh.isMesh||!visible(mesh))return;bounds.setFromObject(mesh);if(bounds.max.y>=.16&&bounds.min.y<=eyeHeight+.15)result.push(bounds.clone());});return result;}
  function occupied(point,boxes=obstacles()){return boxes.some(b=>point.x>b.min.x-.10&&point.x<b.max.x+.10&&point.z>b.min.z-.10&&point.z<b.max.z+.10);}
  function orient(){const d=walkDirection(yaw,pitch);camera.lookAt(camera.position.x+d.x,camera.position.y+d.y,camera.position.z+d.z);camera.updateMatrixWorld();}
- function jump(id,{first=false}={}){const point=entries.find(p=>p.id===id);if(!point)return false;if(occupied(point)){notify('This point is occupied by furniture. Choose another spot.');menu.value=current?.id||'';return false;}
-  current=point;camera.position.set(point.x,eyeHeight,point.z);orient();location.textContent='Walkthrough · '+point.label;menu.value=point.id;lastMarkers=0;
+ function jump(id,{first=false}={}){const point=entries.find(p=>p.id===id);if(!point)return false;if(occupied(point)){notify('This point is occupied by furniture. Choose another spot.');menu.value=current?.destination||current?.id||'';return false;}
+  current=point;camera.position.set(point.x,eyeHeight,point.z);orient();location.textContent='Walkthrough · '+point.label;menu.value=point.destination||point.id;lastMarkers=0;
   if(!first&&!matchMedia('(prefers-reduced-motion: reduce)').matches){flash.classList.remove('jumping');void flash.offsetWidth;flash.classList.add('jumping');}return true;
  }
  function start(){if(active)return;const point=entries.find(p=>!occupied(p));if(!point){notify('Move furniture to clear a walkthrough point.');return;}
@@ -31,7 +43,7 @@ export function createWalkthrough({camera,canvas,viewport,architecture,furniture
  menu.onchange=()=>jump(menu.value);
  function update(time){if(!active)return;orient();if(time-lastMarkers<120)return;lastMarkers=time;
   architecture.updateWorldMatrix(true,true);furniture.updateWorldMatrix(true,true);const rect=canvas.getBoundingClientRect(),boxes=obstacles();
-  for(const point of entries){const blocked=occupied(point,boxes);point.option.disabled=blocked;let show=point!==current&&!blocked;const projected=point.position.clone().project(camera);
+  for(const point of entries){const blocked=occupied(point,boxes);if(point.option)point.option.disabled=blocked;let show=point!==current&&!blocked&&point.position.distanceTo(camera.position)<7;const projected=point.position.clone().project(camera);
    show=show&&projected.z>-1&&projected.z<1&&Math.abs(projected.x)<.94&&Math.abs(projected.y)<.85;
    if(show){const direction=point.position.clone().sub(camera.position),distance=direction.length();ray.set(camera.position,direction.normalize());ray.far=distance-.10;show=!ray.intersectObjects([architecture,furniture],true).some(hit=>visible(hit.object)&&!(hit.object.material.transparent&&hit.object.material.opacity<.5));}
    point.button.hidden=!show;if(show){point.button.style.left=(projected.x*.5+.5)*rect.width+'px';point.button.style.top=(-projected.y*.5+.5)*rect.height+'px';}
