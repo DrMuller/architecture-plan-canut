@@ -59,9 +59,9 @@ part.mesh.scale.y=visibleHeight/part.height;
 part.mesh.position.y=bottom+visibleHeight/2;
 }
 }
-function wall(a,b,thick=.07,h=mainH,openings=[],out=null,material=mats.walls,lowBox=false){const g=new THREE.Group();architecture.add(g);const len=Math.hypot(b[0]-a[0],b[1]-a[1]);g.position.set(a[0],0,a[1]);g.rotation.y=-Math.atan2(b[1]-a[1],b[0]-a[0]);const cuts=[0,len,...openings.flatMap(o=>[o.at,o.at+o.width])].sort((a,b)=>a-b);for(let i=0;i<cuts.length-1;i++){const s=Math.max(0,cuts[i]),e=Math.min(len,cuts[i+1]);if(e-s<.001)continue;const o=openings.find(o=>(s+e)/2>o.at&&(s+e)/2<o.at+o.width);if(!o)box(g,(s+e)/2,0,0,e-s,h,thick,material);else{if(o.sill)box(g,(s+e)/2,0,0,e-s,o.sill,thick,material);const top=(o.sill||0)+o.height;if(h>top)box(g,(s+e)/2,top,0,e-s,h-top,thick,material);if(o.window){const y=o.sill;box(g,(s+e)/2,y,0,e-s,o.height,.025,glass);for(const xx of [s+.025,(s+e)/2,e-.025])box(g,xx,y,0,.035,o.height,.07,white);for(const yy of [y,y+o.height/2,y+o.height-.03])box(g,(s+e)/2,yy,0,e-s,.035,.07,white);box(g,(s+e)/2,y-.04,0,e-s+.08,.05,thick+.09,white)}}}
+function wall(a,b,thick=.07,h=mainH,openings=[],out=null,material=mats.walls,lowBox=false,skirting=true){const g=new THREE.Group();architecture.add(g);const len=Math.hypot(b[0]-a[0],b[1]-a[1]);g.position.set(a[0],0,a[1]);g.rotation.y=-Math.atan2(b[1]-a[1],b[0]-a[0]);const cuts=[0,len,...openings.flatMap(o=>[o.at,o.at+o.width])].sort((a,b)=>a-b);for(let i=0;i<cuts.length-1;i++){const s=Math.max(0,cuts[i]),e=Math.min(len,cuts[i+1]);if(e-s<.001)continue;const o=openings.find(o=>(s+e)/2>o.at&&(s+e)/2<o.at+o.width);if(!o)box(g,(s+e)/2,0,0,e-s,h,thick,material);else{if(o.sill)box(g,(s+e)/2,0,0,e-s,o.sill,thick,material);const top=(o.sill||0)+o.height;if(h>top)box(g,(s+e)/2,top,0,e-s,h-top,thick,material);if(o.window){const y=o.sill;box(g,(s+e)/2,y,0,e-s,o.height,.025,glass);for(const xx of [s+.025,(s+e)/2,e-.025])box(g,xx,y,0,.035,o.height,.07,white);for(const yy of [y,y+o.height/2,y+o.height-.03])box(g,(s+e)/2,yy,0,e-s,.035,.07,white);box(g,(s+e)/2,y-.04,0,e-s+.08,.05,thick+.09,white)}}}
 // Skirting stops at door jambs instead of bridging the opening.
-for(let i=0;i<cuts.length-1;i++){
+if(skirting)for(let i=0;i<cuts.length-1;i++){
 const s=Math.max(0,cuts[i]),e=Math.min(len,cuts[i+1]);if(e-s<.001)continue;
 const opening=openings.find(o=>(s+e)/2>o.at&&(s+e)/2<o.at+o.width);
 if(!opening||opening.sill)box(g,(s+e)/2,0,0,e-s,.095,thick+.016,white);
@@ -82,6 +82,11 @@ w(827,435,930,435,.07,boxH,[{at:.035,width:X(913)-X(830),height:2.1}],null,mats.
 w(936,435,1130,435,.07,boxH,[{at:X(987)-X(936),width:X(1064)-X(987),height:2.1}],null,mats.walls,true);
 // White partitions step inward below the bath; the 62 cm cupboard sits outside.
 w(1130,271,1130,435,.07,boxH,[],null,mats.walls,true);
+// Thin wood cladding only on the kitchen face; the bathroom keeps its plaster wall.
+// Align the finished face with the adjacent 62 cm cupboard fronts.
+const claddingInner=X(1130)+.035,claddingOuter=X(1076)+.035+.62;
+const kitchenCladding=wall([(claddingInner+claddingOuter)/2,Z(271)],[(claddingInner+claddingOuter)/2,Z(435)+.035],claddingOuter-claddingInner,boxH,[],null,mats.joinery,true,false);
+kitchenCladding.name='Kitchen-facing wood wall cladding';
 w(1076,435,1076,576,.07,boxH,[],null,mats.walls,true);
 w(936,576,1076,576,.07,boxH,[],null,mats.walls,true);
 function makeCeilings(){for(const g of [roof,boxRoof,joists,beam,zones,dims]){while(g.children.length){const m=g.children.pop();m.geometry?.dispose();m.parent=null;}}for(const l of dimensionLabels)l.el.remove();dimensionLabels.length=0;
