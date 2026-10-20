@@ -56185,11 +56185,13 @@ polygon(architecture,[[X(828),0],[X(930),0],[X(930),Z(435)],[X(828),Z(435)]],.01
 // Lintels disappear below their fixed underside, leaving doors open to the cut.
 function applyWallCut(w,ceilingHeight,cutHeight){
 for(const part of w.parts){
-const top=part.top+(part.followsCeiling?ceilingHeight-w.h:0);
-const visibleHeight=Math.max(0,Math.min(top,cutHeight)-part.bottom);
+const delta=ceilingHeight-w.h;
+const bottom=part.bottom+(part.topAnchored?delta:0);
+const top=part.top+(part.followsCeiling?delta:0);
+const visibleHeight=Math.max(0,Math.min(top,cutHeight)-bottom);
 part.mesh.visible=visibleHeight>0.00001;
 part.mesh.scale.y=visibleHeight/part.height;
-part.mesh.position.y=part.bottom+visibleHeight/2;
+part.mesh.position.y=bottom+visibleHeight/2;
 }
 }
 function wall(a,b,thick=.07,h=mainH,openings=[],out=null,material=mats.walls,lowBox=false){const g=new THREE.Group();architecture.add(g);const len=Math.hypot(b[0]-a[0],b[1]-a[1]);g.position.set(a[0],0,a[1]);g.rotation.y=-Math.atan2(b[1]-a[1],b[0]-a[0]);const cuts=[0,len,...openings.flatMap(o=>[o.at,o.at+o.width])].sort((a,b)=>a-b);for(let i=0;i<cuts.length-1;i++){const s=Math.max(0,cuts[i]),e=Math.min(len,cuts[i+1]);if(e-s<.001)continue;const o=openings.find(o=>(s+e)/2>o.at&&(s+e)/2<o.at+o.width);if(!o)box(g,(s+e)/2,0,0,e-s,h,thick,material);else{if(o.sill)box(g,(s+e)/2,0,0,e-s,o.sill,thick,material);const top=(o.sill||0)+o.height;if(h>top)box(g,(s+e)/2,top,0,e-s,h-top,thick,material);if(o.window){const y=o.sill;box(g,(s+e)/2,y,0,e-s,o.height,.025,glass);for(const xx of [s+.025,(s+e)/2,e-.025])box(g,xx,y,0,.035,o.height,.07,white);for(const yy of [y,y+o.height/2,y+o.height-.03])box(g,(s+e)/2,yy,0,e-s,.035,.07,white);box(g,(s+e)/2,y-.04,0,e-s+.08,.05,thick+.09,white)}}}
@@ -56210,7 +56212,7 @@ const facadeWindows=[[172,327],[466,575],[676,786],[930,1080],[1178,1332]].map((
 w(420.5,710,420.5,1049,.07);w(669.5,710,669.5,1049,.07);w(927.5,710,927.5,1049,.07);
 w(151,710,927.5,710,.07,4,[{at:X(335),width:X(416)-X(335),height:2.2},{at:X(572),width:X(661)-X(572),height:2.2},{at:X(682),width:X(751)-X(682),height:2.2}]);
 w(566,600,566,710,.07,4,[{at:Z(628)-Z(600),width:.84,height:2.2}]);
-w(930,271,930,600,.07,boxH,[{at:Z(458),width:1.04,height:2.5}],null,mats.walls,true);
+w(930,271,930,576,.07,boxH,[{at:Z(458),width:1.04,height:2.5}],null,mats.walls,true);
 w(827,435,930,435,.07,boxH,[{at:.035,width:X(913)-X(830),height:2.1}],null,mats.walls,true);
 w(936,435,1130,435,.07,boxH,[{at:X(987)-X(936),width:X(1064)-X(987),height:2.1}],null,mats.walls,true);
 // White partitions step inward below the bath; the 62 cm cupboard sits outside.
@@ -56235,24 +56237,24 @@ box(furn,X(1135)+3.135/2,.88,.37,3.135,worktopThickness,.66,mats.countertop);
 box(furn,12.9,.12,Z(460),1.77,.77,.84,mats.joinery);box(furn,12.9,.89,Z(460),1.82,worktopThickness,.9,mats.countertop);
 box(furn,11.76,.885,.36,.62,.015,.43,metal);box(furn,11.76,.897,.36,.52,.01,.34,dark);cyl(furn,11.76,.90,.16,.018,.24,metal);box(furn,11.76,1.12,.23,.035,.035,.16,metal);box(furn,13.0,.885,.36,.58,.018,.49,dark);for(const dx of[-.16,.16])for(const dz of[-.13,.13])cyl(furn,13+dx,.904,.36+dz,.09,.008,metal);
 // Built-in furniture is separate from the plaster partitions, with its own
-// carcass, doors and shelves. Its 2.60 m height is inferred from the 3D views.
+// carcass, doors and shelves, fitted flush to the walls and box ceiling.
 const boxFurn=new THREE.Group();boxFurn.name='Entry cupboard and living-room bookcase';furn.add(boxFurn);
-const cabinetH=2.6,cabinetBack=X(1080),cabinetFront=cabinetBack+.62;
+const cabinetH=2.9,cabinetRearFace=X(1076)+.035,cabinetBack=cabinetRearFace+.0125,cabinetFront=cabinetRearFace+.62-.011;
 function furnitureSection(name,a,b){const g=new THREE.Group();g.name=name;boxFurn.add(g);return {g,a,b};}
-function finishFurnitureSection(section){const parts=section.g.children.map(mesh=>{const height=mesh.geometry.parameters.height,bottom=mesh.position.y-height/2,top=bottom+height;return{mesh,height,bottom,top,followsCeiling:Math.abs(top-cabinetH)<.00001};});walls.push({...section,out:null,h:cabinetH,lowBox:true,isFurniture:true,parts,cutHeight:cabinetH});}
-const tallCupboard=furnitureSection('62 cm deep kitchen-side cupboard',[cabinetFront,Z(439)],[cabinetFront,Z(598)]);
-const cupboardStart=Z(439),cupboardEnd=Z(598),cupboardDepth=cupboardEnd-cupboardStart;
-box(tallCupboard.g,cabinetBack,.04,(cupboardStart+cupboardEnd)/2,.025,cabinetH-.04,cupboardDepth,mats.joinery);
-for(const z of [cupboardStart,cupboardEnd])box(tallCupboard.g,(cabinetBack+cabinetFront)/2,.04,z,.62,cabinetH-.04,.025,mats.joinery);
-for(const y of [.08,cabinetH-.025])box(tallCupboard.g,(cabinetBack+cabinetFront)/2,y,(cupboardStart+cupboardEnd)/2,.62,.025,cupboardDepth,mats.joinery);
-for(let i=0;i<3;i++){const z=cupboardStart+(i+.5)*cupboardDepth/3;box(tallCupboard.g,cabinetFront,.08,z,.022,cabinetH-.08,cupboardDepth/3-.008,mats.joinery);box(tallCupboard.g,cabinetFront+.025,1.05,z+cupboardDepth/6-.05,.025,.20,.012,dark);}
+function finishFurnitureSection(section){const parts=section.g.children.map(mesh=>{const height=mesh.geometry.parameters.height,bottom=mesh.position.y-height/2,top=bottom+height;const followsCeiling=Math.abs(top-cabinetH)<.00001;return{mesh,height,bottom,top,followsCeiling,topAnchored:followsCeiling&&height<.05};});walls.push({...section,out:null,h:cabinetH,lowBox:true,isFurniture:true,parts,cutHeight:cabinetH});}
+const cupboardStart=Z(435)+.035,cupboardEnd=Z(600),cupboardDepth=cupboardEnd-cupboardStart;
+const tallCupboard=furnitureSection('62 cm deep kitchen-side cupboard',[cabinetFront,cupboardStart],[cabinetFront,cupboardEnd]);
+box(tallCupboard.g,cabinetBack,0,(cupboardStart+cupboardEnd)/2,.025,cabinetH,cupboardDepth,mats.joinery);
+for(const z of [cupboardStart+.0125,cupboardEnd-.0125])box(tallCupboard.g,cabinetRearFace+.31,0,z,.62,cabinetH,.025,mats.joinery);
+for(const y of [0,cabinetH-.025])box(tallCupboard.g,cabinetRearFace+.31,y,(cupboardStart+cupboardEnd)/2,.62,.025,cupboardDepth,mats.joinery);
+for(let i=0;i<3;i++){const z=cupboardStart+(i+.5)*cupboardDepth/3;box(tallCupboard.g,cabinetFront,0,z,.022,cabinetH,cupboardDepth/3-.008,mats.joinery);box(tallCupboard.g,cabinetFront+.025,1.05,z+cupboardDepth/6-.05,.025,.20,.012,dark);}
 finishFurnitureSection(tallCupboard);
-const shelfLeft=X(936),shelfRight=X(1072),shelfX=(shelfLeft+shelfRight)/2,shelfW=shelfRight-shelfLeft,shelfBack=Z(580),shelfFront=Z(600),shelfDepth=shelfFront-shelfBack;
+const shelfLeft=X(930)-.035,shelfRight=cabinetRearFace,shelfX=(shelfLeft+shelfRight)/2,shelfW=shelfRight-shelfLeft,shelfBack=Z(576)+.035,shelfFront=Z(600),shelfDepth=shelfFront-shelfBack;
 const bookcase=furnitureSection('Living-room bookcase',[shelfLeft,shelfFront],[shelfRight,shelfFront]);
-box(bookcase.g,shelfX,0,shelfBack,shelfW,cabinetH,.02,mats.joinery);
-for(const x of [shelfLeft,shelfX,shelfRight])box(bookcase.g,x,0,(shelfBack+shelfFront)/2,.025,cabinetH,shelfDepth,mats.joinery);
+box(bookcase.g,shelfX,0,shelfBack+.01,shelfW,cabinetH,.02,mats.joinery);
+for(const x of [shelfLeft+.0125,shelfX,shelfRight-.0125])box(bookcase.g,x,0,(shelfBack+shelfFront)/2,.025,cabinetH,shelfDepth,mats.joinery);
 for(const y of [.0,.75,1.21,1.67,2.13,cabinetH-.025])box(bookcase.g,shelfX,y,(shelfBack+shelfFront)/2,shelfW,.025,shelfDepth,mats.joinery);
-box(bookcase.g,shelfX,.06,shelfFront,shelfW,.67,.025,mats.joinery);
+box(bookcase.g,shelfX,0,shelfFront-.0125,shelfW,.73,.025,mats.joinery);
 for(let i=0;i<9;i++)box(bookcase.g,shelfLeft+.08+i*.065,.775,shelfFront-.09,.045,.23+rand()*.08,.15,basic(['#a59c83','#8b9c88','#bba88d'][i%3]));
 finishFurnitureSection(bookcase);
 function wardrobe(x,z,w,id,label,d=.6){const start=furn.children.length;box(furn,x,.08,z,w,2.6,d,mats.joinery);for(let xx=x-w/2+.02;xx<x+w/2;xx+=.5)box(furn,xx,.10,z+d/2+.005,.012,2.55,.018,white);groupFurniture(start,id,label,x,z)}
@@ -56319,7 +56321,7 @@ let activeView='overview',transition=null;const presets={bathroom:{p:[7.0,7.8,5.
 function setView(name,instant=false){const previous=camera;camera=name==='plan'?orthographic:perspective;if(camera!==previous){camera.position.copy(previous.position);controls.object=camera;}activeView=name;$('viewport').classList.toggle('interior',name==='inside');if(camera.isPerspectiveCamera)camera.fov=name==='inside'?62:40;camera.zoom=1;camera.updateProjectionMatrix();const source=presets[name],p={p:[...source.p],t:[...source.t]};const rect=wrap.getBoundingClientRect();if(name!=='inside'&&name!=='plan'){const fit=Math.max(1,1.25/(rect.width/rect.height));p.p=p.p.map((v,i)=>p.t[i]+(v-p.t[i])*fit);}document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===name));if(instant){camera.position.fromArray(p.p);controls.target.fromArray(p.t);controls.update()}else transition={from:camera.position.clone(),to:new THREE.Vector3(...p.p),ft:controls.target.clone(),tt:new THREE.Vector3(...p.t),start:performance.now()};}
 setView('overview',true);document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));controls.addEventListener('start',()=>transition=null);
 function segmentCross(a,b,c,d){const cross=(p,q,r)=>(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);return cross(a,b,c)*cross(a,b,d)<0&&cross(c,d,a)*cross(c,d,b)<0;}
-const ray=new THREE.Raycaster();function updateCutaway(){const mode=$('wall-mode').value;const elevated=camera.position.y>mainH+.2;const cam2=[camera.position.x,camera.position.z],tar2=[controls.target.x,controls.target.z];for(const w of walls){let scale=1;const h=w.isFurniture?Math.min(w.h,boxH-.05):w.lowBox?boxH:w.h+(mainH-4);if(mode==='off')scale=w.isFurniture?1:.001;else if(mode==='low')scale=.035;else if(mode==='auto'){const mx=(w.a[0]+w.b[0])/2,mz=(w.a[1]+w.b[1])/2;const front=w.out&&((camera.position.x-mx)*w.out[0]+(camera.position.z-mz)*w.out[1]>.3);const obstruct=segmentCross(cam2,tar2,w.a,w.b)&&camera.position.y<h+2;if(elevated&&!w.out&&!w.lowBox)scale=.29;if((front&&elevated)||obstruct)scale=.035;if(activeView==='plan'&&elevated)scale=.035;}w.cutHeight+=(scale*h-w.cutHeight)*.18;applyWallCut(w,h,w.cutHeight);w.g.visible=w.isFurniture||mode!=='off';}
+const ray=new THREE.Raycaster();function updateCutaway(){const mode=$('wall-mode').value;const elevated=camera.position.y>mainH+.2;const cam2=[camera.position.x,camera.position.z],tar2=[controls.target.x,controls.target.z];for(const w of walls){let scale=1;const h=w.lowBox?boxH:w.h+(mainH-4);if(mode==='off')scale=w.isFurniture?1:.001;else if(mode==='low')scale=.035;else if(mode==='auto'){const mx=(w.a[0]+w.b[0])/2,mz=(w.a[1]+w.b[1])/2;const front=w.out&&((camera.position.x-mx)*w.out[0]+(camera.position.z-mz)*w.out[1]>.3);const obstruct=segmentCross(cam2,tar2,w.a,w.b)&&camera.position.y<h+2;if(elevated&&!w.out&&!w.lowBox)scale=.29;if((front&&elevated)||obstruct)scale=.035;if(activeView==='plan'&&elevated)scale=.035;}w.cutHeight+=(scale*h-w.cutHeight)*.18;applyWallCut(w,h,w.cutHeight);w.g.visible=w.isFurniture||mode!=='off';}
 const cm=$('ceiling-mode').value;roof.visible=cm==='full'||(cm==='auto'&&camera.position.y<mainH-.12);boxRoof.visible=cm==='full'||(cm==='auto'&&camera.position.y>boxH+.25)|| (cm==='auto'&&camera.position.x>8.62&&camera.position.x<X(1134)&&camera.position.z<Z(600));joists.visible=cm==='full'||cm==='structure'||(cm==='auto'&&camera.position.y<mainH);beam.visible=cm!=='off'&&activeView!=='plan';if(cm==='structure'||(activeView==='plan'&&cm==='auto'))boxRoof.visible=false;
 }
 function showLabels(){const r=wrap.getBoundingClientRect();for(const a of [...roomLabels,...dimensionLabels]){const isDim=dimensionLabels.includes(a);const show=isDim?$('dimensions').checked:($('room-labels').checked&&camera.position.y>4.5);const p=a.pos.clone().project(camera);a.el.style.display=show&&p.z<1&&p.z>-1?'block':'none';a.el.style.left=(p.x*.5+.5)*r.width+'px';a.el.style.top=(-p.y*.5+.5)*r.height+'px';}}
