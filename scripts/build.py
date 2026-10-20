@@ -15,8 +15,9 @@ orbit=(root/'vendor/OrbitControls.js').read_text()
 orbit=re.sub(r"import\s*\{([^}]+)\}\s*from 'three';",r'const {\1}=THREE;',orbit)
 orbit=re.sub(r'export\s*\{\s*OrbitControls\s*\};?','return OrbitControls;',orbit)
 format_code=(root/'design-format.js').read_text().replace('export ','')
+walk_code=re.sub(r'^import .*?;\n','',(root/'walkthrough.js').read_text(),flags=re.M).replace('export ','')
 app=re.sub(r'^import .*?;\n','',(root/'app.js').read_text(),flags=re.M)
-js='(()=>{const THREE=(()=>{'+three+'})();const OrbitControls=(()=>{'+orbit+'})();'+format_code+'\n'+app+'})();'
+js='(()=>{const THREE=(()=>{'+three+'})();const OrbitControls=(()=>{'+orbit+'})();'+format_code+'\n'+walk_code+'\n'+app+'})();'
 css='\n'.join(line for line in (root/'style.css').read_text().splitlines() if not line.startswith('@import'))
 html=(root/'index.html').read_text().replace('<link rel="stylesheet" href="style.css">','<style>'+css+'</style>')
 html=re.sub(r'<script type="importmap">.*?</script>','',html)
