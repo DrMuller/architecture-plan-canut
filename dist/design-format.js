@@ -16,11 +16,12 @@ const ids=new Set(spec.furnitureIds);if(!Array.isArray(input.furniture)||input.f
 const furniture=input.furniture.map(item=>{if(!record(item)||!ids.delete(item.id))bad('Unknown or duplicate furniture item');return{id:item.id,x:number(item.x,-2,16,'furniture X'),z:number(item.z,-2,11,'furniture Y'),angle:number(item.angle,-100*Math.PI,100*Math.PI,'rotation')};});
 const ceilings={box:number(input.ceilings.box,2.4,3.4,'box ceiling'),main:number(input.ceilings.main,3.5,4.5,'main ceiling')};
 const result={format:DESIGN_FORMAT,version:1,units:'metres',materials,textures,furniture,ceilings};
+if(input.furnitureColours!==undefined){if(!record(input.furnitureColours))bad('Invalid furniture colours');const colours={};for(const [id,parts] of Object.entries(input.furnitureColours)){if(!spec.furnitureIds.includes(id)||!record(parts))bad('Unknown furniture colour target');colours[id]={};for(const [part,colour] of Object.entries(parts)){if(!['wood','upholstery','bedding'].includes(part)||typeof colour!=='string'||!/^#[0-9a-f]{6}$/i.test(colour))bad('Invalid furniture colour');colours[id][part]=colour;}}result.furnitureColours=colours;}
 if(input.recentColours!==undefined){if(!Array.isArray(input.recentColours)||input.recentColours.length>12||input.recentColours.some(c=>typeof c!=='string'||!/^#[0-9a-f]{6}$/i.test(c)))bad('Invalid saved colour palette');result.recentColours=[...new Set(input.recentColours.map(c=>c.toLowerCase()))];}
 if(JSON.stringify(result).length>MAX_DESIGN_BYTES)bad('This design is too large (maximum 8 MB).');
 return result;
 }
-export function designFingerprint(design){return JSON.stringify({materials:design.materials,textures:design.textures,furniture:design.furniture,ceilings:design.ceilings,recentColours:design.recentColours});}
+export function designFingerprint(design){return JSON.stringify({materials:design.materials,textures:design.textures,furniture:design.furniture,ceilings:design.ceilings,recentColours:design.recentColours,furnitureColours:design.furnitureColours});}
 
 // References preserve a formerly shared texture without duplicating it per wall.
 export function resolveDesignTexture(textures,key){

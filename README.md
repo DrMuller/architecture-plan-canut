@@ -64,3 +64,10 @@ Colours are included in automatic local recovery, JSON export/import and **Save 
 Use **Pick walls or tiled floors**, then click a face. **Shift-click** adds or removes faces, including without first entering selection mode. A blue overlay marks the actual selected faces, following wall cutaways and ceiling-height changes. The selection count and names appear in Materials. A normal click replaces the selection, and **Clear selection** or Esc clears it. Selection is local UI state and is never exported or shared. Colour/finish and roughness edits apply to the whole selection; uploaded texture editing is limited to a single non-tiled surface.
 
 Wall selection also works inside **Walkthrough**: enable **Pick walls or tiled floors**, click to select, or Shift-click to add/remove. Dragging still turns your head and floor dots still move between points. Colour changes keep the same camera position and direction. Esc first clears an active selection; a second Esc exits walkthrough.
+
+
+## Furniture detail and individual colours
+
+Movable sofas, armchairs, chairs, beds, wardrobes, tables and the desk use rounded edges, padded cushions, timber legs, handles, fabric weave and wood grain. The reconstruction keeps the existing furniture IDs, positions, rotations and nominal sizes; these are illustrative furniture models, not identified manufacturer products.
+
+Select furniture in **Furniture** or click it in walkthrough. Choose **Wood & frame**, **Upholstery / fabric**, or **Bedding / scatter cushions** where available, then use the colour picker, swatches or saved colours. Only the selected piece changes. **Restore colours** restores that piece’s original palette independently of its position. Colour overrides are included in automatic local saves, JSON exports and explicit shared saves. Older designs load with the new default furniture palette. No database migration is required. In walkthrough, arrow keys keep turning the head; Esc deselects furniture before exiting.
