@@ -1,8 +1,8 @@
-import {createFurnitureMaterials,furnitureBuilder,isolateFurnitureMaterials,applyFurnitureColours} from './furniture-models.js?v=d855edd84021';
-import {nextSurfaceSelection,rememberColour,selectionGeometry} from './surface-editor.js?v=d855edd84021';
-import {configureTiles} from './surface-materials.js?v=d855edd84021';
-import {createWalkthrough,buildWalkPoints} from './walkthrough.js?v=d855edd84021';
-import {DESIGN_FORMAT,MAX_DESIGN_BYTES,validateDesign,designFingerprint,resolveDesignTexture} from './design-format.js?v=d855edd84021';
+import {createFurnitureMaterials,furnitureBuilder,isolateFurnitureMaterials,applyFurnitureColours} from './furniture-models.js?v=e27026fc65f2';
+import {nextSurfaceSelection,rememberColour,selectionGeometry} from './surface-editor.js?v=e27026fc65f2';
+import {configureTiles} from './surface-materials.js?v=e27026fc65f2';
+import {createWalkthrough,buildWalkPoints} from './walkthrough.js?v=e27026fc65f2';
+import {DESIGN_FORMAT,MAX_DESIGN_BYTES,validateDesign,designFingerprint,resolveDesignTexture} from './design-format.js?v=e27026fc65f2';
 import * as THREE from 'three';
 import {OrbitControls} from './vendor/OrbitControls.js';
 const $=id=>document.getElementById(id), wrap=$('canvas-wrap');
@@ -347,8 +347,8 @@ document.querySelector('[data-tab="materials"]').click();
 renderer.domElement.addEventListener('pointercancel',()=>surfacePointer=null,true);
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&(pickingSurface||selectedSurfaces.size)){e.preventDefault();setSurfacePicking(false);surfaceUI();}});
 $('arrange-toggle').onclick=()=>setArranging(!arranging);
-document.querySelector('[data-tab="layout"]').addEventListener('click',()=>{if(!walkthrough?.active)setArranging(true);});
-$('object-select').onchange=()=>{if(!walkthrough?.active)setArranging(true);selectFurniture(movableObjects.find(o=>o.userData.furniture.id===$('object-select').value)||null);};
+document.querySelector('[data-tab="layout"]').addEventListener('click',()=>{if(walkthrough?.active)setSurfacePicking(false);else setArranging(true);});
+$('object-select').onchange=()=>{if(walkthrough?.active)setSurfacePicking(false);else setArranging(true);selectFurniture(movableObjects.find(o=>o.userData.furniture.id===$('object-select').value)||null);};
 $('deselect-object').onclick=()=>selectFurniture(null);
 function moveSelected(dx,dz){if(!selectedFurniture)return;rememberLayout();selectedFurniture.position.x=THREE.MathUtils.clamp(selectedFurniture.position.x+dx,-2,16);selectedFurniture.position.z=THREE.MathUtils.clamp(selectedFurniture.position.z+dz,-2,11);syncObjectFields();saveLayout();}
 function rotateSelected(degrees){if(!selectedFurniture)return;rememberLayout();selectedFurniture.rotation.y=THREE.MathUtils.degToRad((normalizedAngle(selectedFurniture.rotation.y)+degrees+360)%360);syncObjectFields();saveLayout();}
