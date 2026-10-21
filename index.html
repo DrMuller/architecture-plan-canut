@@ -56200,7 +56200,7 @@ function buildWalkPoints(destinations,routes,spacing=.50){
  }return result;
 }
 
-function createWalkthrough({camera,canvas,viewport,architecture,furniture,points,onEnter,onExit,notify}){
+function createWalkthrough({camera,canvas,viewport,architecture,furniture,points,onEnter,onExit,notify,onSceneClick=()=>{}}){
  const eyeHeight=1.65,ray=new THREE.Raycaster(),bounds=new THREE.Box3();
  let active=false,yaw=0,pitch=-.22,current=null,gesture=null,lastMarkers=0;
  const markerLayer=document.createElement('div');markerLayer.className='walk-markers';markerLayer.hidden=true;viewport.append(markerLayer);
@@ -56208,7 +56208,7 @@ function createWalkthrough({camera,canvas,viewport,architecture,furniture,points
  const location=document.createElement('span');location.className='walk-location';location.setAttribute('role','status');
  const label=document.createElement('label');label.textContent='Jump to ';const menu=document.createElement('select');menu.setAttribute('aria-label','Walkthrough destination');label.append(menu);
  const exitButton=document.createElement('button');exitButton.textContent='Exit walkthrough';exitButton.onclick=()=>exit();
- const hint=document.createElement('small');hint.textContent='Click a floor dot · Drag to look · Arrow keys to turn · Esc to exit';
+ const hint=document.createElement('small');hint.textContent='Click a floor dot · Drag to look · Arrow keys to turn · Esc clears selection, then exits';
  panel.append(location,label,exitButton,hint);viewport.append(panel);
  const flash=document.createElement('div');flash.className='walk-flash';viewport.append(flash);
  const entries=points.map(point=>{const button=document.createElement('button');button.className='walk-point'+(point.route?' walk-route-point':'');button.dataset.walkId=point.id;button.setAttribute('aria-label',point.route?'Move along '+point.label+' · point '+point.step:'Walk to '+point.label);button.title=point.label;const ring=document.createElement('span');ring.setAttribute('aria-hidden','true');const text=document.createElement('small');text.textContent=point.label;button.append(ring,text);button.onclick=e=>{if(e.detail===0)jump(point.id);};markerLayer.append(button);let option=null;if(!point.route){option=document.createElement('option');option.value=point.id;option.textContent=point.label;menu.append(option);}return {...point,button,option,position:new THREE.Vector3(point.x,.035,point.z)};});
@@ -56235,13 +56235,13 @@ function createWalkthrough({camera,canvas,viewport,architecture,furniture,points
  }
  function isSceneTarget(target){return target===canvas||markerLayer.contains(target);}
  function cancelGesture(){if(gesture&&viewport.hasPointerCapture(gesture.id))viewport.releasePointerCapture(gesture.id);gesture=null;viewport.classList.remove('looking');}
- viewport.addEventListener('pointerdown',e=>{if(!active||!isSceneTarget(e.target)||e.button!==0)return;e.preventDefault();e.stopImmediatePropagation();if(gesture)return;gesture={id:e.pointerId,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,maxDistance:0,destination:e.target.closest('[data-walk-id]')?.dataset.walkId};viewport.setPointerCapture(e.pointerId);viewport.classList.add('looking');},true);
+ viewport.addEventListener('pointerdown',e=>{if(!active||!isSceneTarget(e.target)||e.button!==0)return;e.preventDefault();e.stopImmediatePropagation();if(gesture)return;gesture={id:e.pointerId,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,maxDistance:0,additive:e.shiftKey,destination:e.target.closest('[data-walk-id]')?.dataset.walkId};viewport.setPointerCapture(e.pointerId);viewport.classList.add('looking');},true);
  viewport.addEventListener('pointermove',e=>{if(!active||!gesture||gesture.id!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();const next=turnHead(yaw,pitch,e.clientX-gesture.x,e.clientY-gesture.y);yaw=next.yaw;pitch=next.pitch;gesture.x=e.clientX;gesture.y=e.clientY;gesture.maxDistance=Math.max(gesture.maxDistance,Math.hypot(e.clientX-gesture.startX,e.clientY-gesture.startY));lastMarkers=0;},true);
- viewport.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();const saved=gesture;cancelGesture();if(isWalkClick(saved.maxDistance)&&saved.destination)jump(saved.destination);},true);
+ viewport.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();const saved=gesture;cancelGesture();if(isWalkClick(Math.max(saved.maxDistance,Math.hypot(e.clientX-saved.startX,e.clientY-saved.startY)))){if(saved.destination&&!saved.additive)jump(saved.destination);else onSceneClick(e,!!saved.additive);}},true);
  for(const event of ['pointercancel','lostpointercapture'])viewport.addEventListener(event,e=>{if(gesture?.id===e.pointerId)cancelGesture();},true);
  viewport.addEventListener('wheel',e=>{if(!active||!isSceneTarget(e.target))return;e.preventDefault();e.stopImmediatePropagation();zoom(e.deltaY>0?1.04:.96);},{capture:true,passive:false});
  window.addEventListener('blur',cancelGesture);
- window.addEventListener('keydown',e=>{if(!active||document.querySelector('dialog[open]')||e.target.closest('input,select,textarea,[contenteditable=true]'))return;const turns={ArrowLeft:[-.12,0],ArrowRight:[.12,0],ArrowUp:[0,.09],ArrowDown:[0,-.09]};if(e.key==='Escape'){e.preventDefault();exit();}else if(turns[e.key]){e.preventDefault();yaw+=turns[e.key][0];pitch=Math.max(-1.25,Math.min(1.25,pitch+turns[e.key][1]));lastMarkers=0;}});
+ window.addEventListener('keydown',e=>{if(e.defaultPrevented||!active||document.querySelector('dialog[open]')||e.target.closest('input,select,textarea,[contenteditable=true]'))return;const turns={ArrowLeft:[-.12,0],ArrowRight:[.12,0],ArrowUp:[0,.09],ArrowDown:[0,-.09]};if(e.key==='Escape'){e.preventDefault();exit();}else if(turns[e.key]){e.preventDefault();yaw+=turns[e.key][0];pitch=Math.max(-1.25,Math.min(1.25,pitch+turns[e.key][1]));lastMarkers=0;}});
  function zoom(factor){camera.fov=Math.max(45,Math.min(85,camera.fov*factor));camera.updateProjectionMatrix();lastMarkers=0;}
  return {start,exit,update,zoom,get active(){return active;}};
 }
@@ -56554,7 +56554,7 @@ function updateSelectionOutline(){selectionOutline.visible=!!selectedFurniture&&
 for(const object of movableObjects){const option=document.createElement('option');option.value=object.userData.furniture.id;option.textContent=object.userData.furniture.label;$('object-select').append(option);}
 let pickingSurface=false,surfacePointer=null;
 function setSurfacePicking(enabled){pickingSurface=enabled;$('pick-surface').setAttribute('aria-pressed',String(enabled));$('pick-surface').textContent=enabled?'✓ Select walls · Shift-click to add':'⌖ Pick walls or tiled floors';renderer.domElement.style.cursor=enabled?'crosshair':'';if(!enabled)clearSurfaceSelection();}
-$('pick-surface').onclick=()=>{const enabled=!pickingSurface;if(enabled){if(walkthrough?.active)walkthrough.exit();setArranging(false);}setSurfacePicking(enabled);};
+$('pick-surface').onclick=()=>{const enabled=!pickingSurface;if(enabled)setArranging(false);setSurfacePicking(enabled);};
 renderer.domElement.addEventListener('pointerdown',e=>{
 if((pickingSurface||e.shiftKey)&&!walkthrough?.active&&!arranging&&e.button===0){surfacePointer={id:e.pointerId,x:e.clientX,y:e.clientY,additive:e.shiftKey,distance:0};if(e.shiftKey){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}}
 },true);
@@ -56563,15 +56563,19 @@ renderer.domElement.addEventListener('pointerup',e=>{
 if(!surfacePointer||e.pointerId!==surfacePointer.id)return;const start=surfacePointer;surfacePointer=null;
 if(start.additive){e.preventDefault();e.stopImmediatePropagation();if(renderer.domElement.hasPointerCapture(e.pointerId))renderer.domElement.releasePointerCapture(e.pointerId);}
 if(Math.max(start.distance,Math.hypot(e.clientX-start.x,e.clientY-start.y))>5)return;
+pickSurfaceAt(e,start.additive);
+},true);
+// Walkthrough owns its drag gesture and forwards stationary scene clicks here.
+function pickSurfaceAt(e,additive=false){
 scene.updateMatrixWorld(true);rayFromPointer(e);
 const hit=pickRay.intersectObjects([architecture,furn,roof,boxRoof],true).find(hit=>effectivelyVisible(hit.object)&&!(hit.object.material.transparent&&hit.object.material.opacity<.5));
 const material=hit&&(Array.isArray(hit.object.material)?hit.object.material[hit.face.materialIndex]:hit.object.material),pickedKey=material?.userData.surfaceKey,key=surfaceAliases[pickedKey]||pickedKey;
-if(!key){if(!start.additive){clearSurfaceSelection();surfaceUI();}return;}
-selectSurface(key,start.additive);setSurfacePicking(true);
+if(!key){if(!additive){clearSurfaceSelection();surfaceUI();}return;}
+selectSurface(key,additive);setSurfacePicking(true);
 document.querySelector('[data-tab="materials"]').click();
-},true);
+}
 renderer.domElement.addEventListener('pointercancel',()=>surfacePointer=null,true);
-window.addEventListener('keydown',e=>{if(e.key==='Escape'){setSurfacePicking(false);surfaceUI();}});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&(pickingSurface||selectedSurfaces.size)){e.preventDefault();setSurfacePicking(false);surfaceUI();}});
 $('arrange-toggle').onclick=()=>setArranging(!arranging);
 document.querySelector('[data-tab="layout"]').addEventListener('click',()=>setArranging(true));
 $('object-select').onchange=()=>{setArranging(true);selectFurniture(movableObjects.find(o=>o.userData.furniture.id===$('object-select').value)||null);};
@@ -56637,6 +56641,7 @@ window.ivryDesign.ready=designRecovery;window.dispatchEvent(new Event('ivry-desi
 
 // Walkthrough is a local viewing mode; it never changes the shared design.
 walkthrough=createWalkthrough({camera:perspective,canvas:renderer.domElement,viewport:$('viewport'),architecture,furniture:furn,notify:toast,
+onSceneClick:(event,additive)=>{if(pickingSurface||additive)pickSurfaceAt(event,additive);},
 points:buildWalkPoints([
 {id:'living',label:'Living room',x:10.8,z:6.45},{id:'dining',label:'Dining area',x:11.25,z:6.6},
 {id:'kitchen',label:'Kitchen aisle',x:11.55,z:2.9},{id:'worktop',label:'Kitchen worktop',x:12,z:1.18},

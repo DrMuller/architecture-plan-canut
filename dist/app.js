@@ -1,7 +1,7 @@
-import {nextSurfaceSelection,rememberColour,selectionGeometry} from './surface-editor.js?v=190446662ae7';
-import {configureTiles} from './surface-materials.js?v=190446662ae7';
-import {createWalkthrough,buildWalkPoints} from './walkthrough.js?v=190446662ae7';
-import {DESIGN_FORMAT,MAX_DESIGN_BYTES,validateDesign,designFingerprint,resolveDesignTexture} from './design-format.js?v=190446662ae7';
+import {nextSurfaceSelection,rememberColour,selectionGeometry} from './surface-editor.js?v=af191a070776';
+import {configureTiles} from './surface-materials.js?v=af191a070776';
+import {createWalkthrough,buildWalkPoints} from './walkthrough.js?v=af191a070776';
+import {DESIGN_FORMAT,MAX_DESIGN_BYTES,validateDesign,designFingerprint,resolveDesignTexture} from './design-format.js?v=af191a070776';
 import * as THREE from 'three';
 import {OrbitControls} from './vendor/OrbitControls.js';
 const $=id=>document.getElementById(id), wrap=$('canvas-wrap');
@@ -312,7 +312,7 @@ function updateSelectionOutline(){selectionOutline.visible=!!selectedFurniture&&
 for(const object of movableObjects){const option=document.createElement('option');option.value=object.userData.furniture.id;option.textContent=object.userData.furniture.label;$('object-select').append(option);}
 let pickingSurface=false,surfacePointer=null;
 function setSurfacePicking(enabled){pickingSurface=enabled;$('pick-surface').setAttribute('aria-pressed',String(enabled));$('pick-surface').textContent=enabled?'✓ Select walls · Shift-click to add':'⌖ Pick walls or tiled floors';renderer.domElement.style.cursor=enabled?'crosshair':'';if(!enabled)clearSurfaceSelection();}
-$('pick-surface').onclick=()=>{const enabled=!pickingSurface;if(enabled){if(walkthrough?.active)walkthrough.exit();setArranging(false);}setSurfacePicking(enabled);};
+$('pick-surface').onclick=()=>{const enabled=!pickingSurface;if(enabled)setArranging(false);setSurfacePicking(enabled);};
 renderer.domElement.addEventListener('pointerdown',e=>{
 if((pickingSurface||e.shiftKey)&&!walkthrough?.active&&!arranging&&e.button===0){surfacePointer={id:e.pointerId,x:e.clientX,y:e.clientY,additive:e.shiftKey,distance:0};if(e.shiftKey){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}}
 },true);
@@ -321,15 +321,19 @@ renderer.domElement.addEventListener('pointerup',e=>{
 if(!surfacePointer||e.pointerId!==surfacePointer.id)return;const start=surfacePointer;surfacePointer=null;
 if(start.additive){e.preventDefault();e.stopImmediatePropagation();if(renderer.domElement.hasPointerCapture(e.pointerId))renderer.domElement.releasePointerCapture(e.pointerId);}
 if(Math.max(start.distance,Math.hypot(e.clientX-start.x,e.clientY-start.y))>5)return;
+pickSurfaceAt(e,start.additive);
+},true);
+// Walkthrough owns its drag gesture and forwards stationary scene clicks here.
+function pickSurfaceAt(e,additive=false){
 scene.updateMatrixWorld(true);rayFromPointer(e);
 const hit=pickRay.intersectObjects([architecture,furn,roof,boxRoof],true).find(hit=>effectivelyVisible(hit.object)&&!(hit.object.material.transparent&&hit.object.material.opacity<.5));
 const material=hit&&(Array.isArray(hit.object.material)?hit.object.material[hit.face.materialIndex]:hit.object.material),pickedKey=material?.userData.surfaceKey,key=surfaceAliases[pickedKey]||pickedKey;
-if(!key){if(!start.additive){clearSurfaceSelection();surfaceUI();}return;}
-selectSurface(key,start.additive);setSurfacePicking(true);
+if(!key){if(!additive){clearSurfaceSelection();surfaceUI();}return;}
+selectSurface(key,additive);setSurfacePicking(true);
 document.querySelector('[data-tab="materials"]').click();
-},true);
+}
 renderer.domElement.addEventListener('pointercancel',()=>surfacePointer=null,true);
-window.addEventListener('keydown',e=>{if(e.key==='Escape'){setSurfacePicking(false);surfaceUI();}});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&(pickingSurface||selectedSurfaces.size)){e.preventDefault();setSurfacePicking(false);surfaceUI();}});
 $('arrange-toggle').onclick=()=>setArranging(!arranging);
 document.querySelector('[data-tab="layout"]').addEventListener('click',()=>setArranging(true));
 $('object-select').onchange=()=>{setArranging(true);selectFurniture(movableObjects.find(o=>o.userData.furniture.id===$('object-select').value)||null);};
@@ -395,6 +399,7 @@ window.ivryDesign.ready=designRecovery;window.dispatchEvent(new Event('ivry-desi
 
 // Walkthrough is a local viewing mode; it never changes the shared design.
 walkthrough=createWalkthrough({camera:perspective,canvas:renderer.domElement,viewport:$('viewport'),architecture,furniture:furn,notify:toast,
+onSceneClick:(event,additive)=>{if(pickingSurface||additive)pickSurfaceAt(event,additive);},
 points:buildWalkPoints([
 {id:'living',label:'Living room',x:10.8,z:6.45},{id:'dining',label:'Dining area',x:11.25,z:6.6},
 {id:'kitchen',label:'Kitchen aisle',x:11.55,z:2.9},{id:'worktop',label:'Kitchen worktop',x:12,z:1.18},

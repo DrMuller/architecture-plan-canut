@@ -16,7 +16,7 @@ export function buildWalkPoints(destinations,routes,spacing=.50){
  }return result;
 }
 
-export function createWalkthrough({camera,canvas,viewport,architecture,furniture,points,onEnter,onExit,notify}){
+export function createWalkthrough({camera,canvas,viewport,architecture,furniture,points,onEnter,onExit,notify,onSceneClick=()=>{}}){
  const eyeHeight=1.65,ray=new THREE.Raycaster(),bounds=new THREE.Box3();
  let active=false,yaw=0,pitch=-.22,current=null,gesture=null,lastMarkers=0;
  const markerLayer=document.createElement('div');markerLayer.className='walk-markers';markerLayer.hidden=true;viewport.append(markerLayer);
@@ -24,7 +24,7 @@ export function createWalkthrough({camera,canvas,viewport,architecture,furniture
  const location=document.createElement('span');location.className='walk-location';location.setAttribute('role','status');
  const label=document.createElement('label');label.textContent='Jump to ';const menu=document.createElement('select');menu.setAttribute('aria-label','Walkthrough destination');label.append(menu);
  const exitButton=document.createElement('button');exitButton.textContent='Exit walkthrough';exitButton.onclick=()=>exit();
- const hint=document.createElement('small');hint.textContent='Click a floor dot · Drag to look · Arrow keys to turn · Esc to exit';
+ const hint=document.createElement('small');hint.textContent='Click a floor dot · Drag to look · Arrow keys to turn · Esc clears selection, then exits';
  panel.append(location,label,exitButton,hint);viewport.append(panel);
  const flash=document.createElement('div');flash.className='walk-flash';viewport.append(flash);
  const entries=points.map(point=>{const button=document.createElement('button');button.className='walk-point'+(point.route?' walk-route-point':'');button.dataset.walkId=point.id;button.setAttribute('aria-label',point.route?'Move along '+point.label+' · point '+point.step:'Walk to '+point.label);button.title=point.label;const ring=document.createElement('span');ring.setAttribute('aria-hidden','true');const text=document.createElement('small');text.textContent=point.label;button.append(ring,text);button.onclick=e=>{if(e.detail===0)jump(point.id);};markerLayer.append(button);let option=null;if(!point.route){option=document.createElement('option');option.value=point.id;option.textContent=point.label;menu.append(option);}return {...point,button,option,position:new THREE.Vector3(point.x,.035,point.z)};});
@@ -51,13 +51,13 @@ export function createWalkthrough({camera,canvas,viewport,architecture,furniture
  }
  function isSceneTarget(target){return target===canvas||markerLayer.contains(target);}
  function cancelGesture(){if(gesture&&viewport.hasPointerCapture(gesture.id))viewport.releasePointerCapture(gesture.id);gesture=null;viewport.classList.remove('looking');}
- viewport.addEventListener('pointerdown',e=>{if(!active||!isSceneTarget(e.target)||e.button!==0)return;e.preventDefault();e.stopImmediatePropagation();if(gesture)return;gesture={id:e.pointerId,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,maxDistance:0,destination:e.target.closest('[data-walk-id]')?.dataset.walkId};viewport.setPointerCapture(e.pointerId);viewport.classList.add('looking');},true);
+ viewport.addEventListener('pointerdown',e=>{if(!active||!isSceneTarget(e.target)||e.button!==0)return;e.preventDefault();e.stopImmediatePropagation();if(gesture)return;gesture={id:e.pointerId,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,maxDistance:0,additive:e.shiftKey,destination:e.target.closest('[data-walk-id]')?.dataset.walkId};viewport.setPointerCapture(e.pointerId);viewport.classList.add('looking');},true);
  viewport.addEventListener('pointermove',e=>{if(!active||!gesture||gesture.id!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();const next=turnHead(yaw,pitch,e.clientX-gesture.x,e.clientY-gesture.y);yaw=next.yaw;pitch=next.pitch;gesture.x=e.clientX;gesture.y=e.clientY;gesture.maxDistance=Math.max(gesture.maxDistance,Math.hypot(e.clientX-gesture.startX,e.clientY-gesture.startY));lastMarkers=0;},true);
- viewport.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();const saved=gesture;cancelGesture();if(isWalkClick(saved.maxDistance)&&saved.destination)jump(saved.destination);},true);
+ viewport.addEventListener('pointerup',e=>{if(!gesture||gesture.id!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();const saved=gesture;cancelGesture();if(isWalkClick(Math.max(saved.maxDistance,Math.hypot(e.clientX-saved.startX,e.clientY-saved.startY)))){if(saved.destination&&!saved.additive)jump(saved.destination);else onSceneClick(e,!!saved.additive);}},true);
  for(const event of ['pointercancel','lostpointercapture'])viewport.addEventListener(event,e=>{if(gesture?.id===e.pointerId)cancelGesture();},true);
  viewport.addEventListener('wheel',e=>{if(!active||!isSceneTarget(e.target))return;e.preventDefault();e.stopImmediatePropagation();zoom(e.deltaY>0?1.04:.96);},{capture:true,passive:false});
  window.addEventListener('blur',cancelGesture);
- window.addEventListener('keydown',e=>{if(!active||document.querySelector('dialog[open]')||e.target.closest('input,select,textarea,[contenteditable=true]'))return;const turns={ArrowLeft:[-.12,0],ArrowRight:[.12,0],ArrowUp:[0,.09],ArrowDown:[0,-.09]};if(e.key==='Escape'){e.preventDefault();exit();}else if(turns[e.key]){e.preventDefault();yaw+=turns[e.key][0];pitch=Math.max(-1.25,Math.min(1.25,pitch+turns[e.key][1]));lastMarkers=0;}});
+ window.addEventListener('keydown',e=>{if(e.defaultPrevented||!active||document.querySelector('dialog[open]')||e.target.closest('input,select,textarea,[contenteditable=true]'))return;const turns={ArrowLeft:[-.12,0],ArrowRight:[.12,0],ArrowUp:[0,.09],ArrowDown:[0,-.09]};if(e.key==='Escape'){e.preventDefault();exit();}else if(turns[e.key]){e.preventDefault();yaw+=turns[e.key][0];pitch=Math.max(-1.25,Math.min(1.25,pitch+turns[e.key][1]));lastMarkers=0;}});
  function zoom(factor){camera.fov=Math.max(45,Math.min(85,camera.fov*factor));camera.updateProjectionMatrix();lastMarkers=0;}
  return {start,exit,update,zoom,get active(){return active;}};
 }
