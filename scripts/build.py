@@ -16,7 +16,7 @@ orbit=re.sub(r"import\s*\{([^}]+)\}\s*from 'three';",r'const {\1}=THREE;',orbit)
 orbit=re.sub(r'export\s*\{\s*OrbitControls\s*\};?','return OrbitControls;',orbit)
 format_code=(root/'design-format.js').read_text().replace('export ','')
 walk_code=re.sub(r'^import .*?;\n','',(root/'walkthrough.js').read_text(),flags=re.M).replace('export ','')
-surface_code=(root/'surface-materials.js').read_text().replace('export ','')
+surface_code='\n'.join((root/name).read_text().replace('export ','') for name in ['surface-materials.js','surface-editor.js'])
 app=re.sub(r'^import .*?;\n','',(root/'app.js').read_text(),flags=re.M)
 js='(()=>{const THREE=(()=>{'+three+'})();const OrbitControls=(()=>{'+orbit+'})();'+format_code+'\n'+surface_code+'\n'+walk_code+'\n'+app+'})();'
 css='\n'.join(line for line in (root/'style.css').read_text().splitlines() if not line.startswith('@import'))

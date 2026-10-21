@@ -55,3 +55,10 @@ In **Materials**, select a named wall face or choose **Pick a wall or tiled floo
 The SDB bathroom and SDE shower room have separate floor and wall palettes, including the shower recess returns and the ML cupboard return. Tiles are 50 × 50 mm with 2 mm grout; their world-space grid stays the same size during cutaways and ceiling-height changes. Custom colours leave the grout neutral.
 
 Colours are included in automatic local recovery, JSON export/import and **Save & share → Save shared design**. Older designs inherit their previous plaster finish on the new wall faces. Repeated uploaded textures use validated references to avoid inflating exports. The update needs no Supabase schema changes.
+
+
+## Reuse colours and select multiple walls
+
+**Saved colours** is available for every material. The last used colour appears first; click a saved swatch to reuse that exact solid colour on the current surface or selection. **Save current** also stores an existing surface colour without recolouring anything. Up to 12 unique colours are kept, included in local recovery, JSON exports and shared design saves. Tile grids and neutral grout stay intact when applying colours.
+
+Use **Pick walls or tiled floors**, then click a face. **Shift-click** adds or removes faces, including without first entering selection mode. A blue overlay marks the actual selected faces, following wall cutaways and ceiling-height changes. The selection count and names appear in Materials. A normal click replaces the selection, and **Clear selection** or Esc clears it. Selection is local UI state and is never exported or shared. Colour/finish and roughness edits apply to the whole selection; uploaded texture editing is limited to a single non-tiled surface.

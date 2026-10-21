@@ -39,7 +39,7 @@ assert.deepEqual(validateDesign(JSON.parse(JSON.stringify(migrated)),spec),migra
 const missing=structuredClone(legacy);delete missing.materials.walls;assert.throws(()=>validateDesign(missing,spec));
 const cyclic=structuredClone(migrated);cyclic.textures['wall-0']='@wall-1';cyclic.textures['wall-1']='@wall-0';assert.throws(()=>validateDesign(cyclic,spec),/Cyclic/);
 const broken=structuredClone(migrated);broken.textures['wall-0']='@sdb-floor';assert.throws(()=>validateDesign(broken,spec),/Missing/);
-const edited=structuredClone(migrated);edited.materials['sdb-east']={...finish,finish:'sage'};edited.materials['sdb-floor']={...finish,finish:'paint',tint:'#445566'};
+const edited=structuredClone(migrated);edited.recentColours=['#445566','#929e83'];edited.materials['sdb-east']={...finish,finish:'sage'};edited.materials['sdb-floor']={...finish,finish:'paint',tint:'#445566'};
 assert.notEqual(designFingerprint(edited),designFingerprint(migrated));
 assert.equal(edited.materials['sde-floor'].tint,'#ffffff');
 assert.deepEqual(validateDesign(JSON.parse(JSON.stringify(edited)),spec),edited);
