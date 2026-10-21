@@ -46,3 +46,12 @@ npm run build
 Choose **Walkthrough** in the camera bar for an eye-level visit. Click the small floor dots, spaced about half a metre along the room and corridor routes, to jump, or use **Jump to** to enter another room. Drag (or swipe) to turn your head; arrow keys also turn the view. Scroll or use +/− to change the field of view. **Exit walkthrough**, Esc, or another camera preset returns to orbit controls.
 
 Walls and ceilings remain full in walkthrough mode. Points hidden by walls are not shown, and points occupied by moved furniture are disabled. Navigation is local to each visitor and does not change the shared design.
+
+
+## Individual wall and bathroom colours
+
+In **Materials**, select a named wall face or choose **Pick a wall or tiled floor** and click it in the model. Dragging still orbits the camera. Opposite sides of partitions and room sections of long walls have separate finishes. The kitchen wood cladding also has its own finish.
+
+The SDB bathroom and SDE shower room have separate floor and wall palettes, including the shower recess returns and the ML cupboard return. Tiles are 50 × 50 mm with 2 mm grout; their world-space grid stays the same size during cutaways and ceiling-height changes. Custom colours leave the grout neutral.
+
+Colours are included in automatic local recovery, JSON export/import and **Save & share → Save shared design**. Older designs inherit their previous plaster finish on the new wall faces. Repeated uploaded textures use validated references to avoid inflating exports. The update needs no Supabase schema changes.

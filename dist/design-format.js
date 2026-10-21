@@ -9,8 +9,9 @@ if(!record(input)||input.format!==DESIGN_FORMAT||input.version!==1)bad('Choose a
 if(input.units!=='metres')bad('The design must use metres.');
 if(!record(input.materials)||!record(input.ceilings)||!record(input.textures))bad('The design is missing finishes or ceiling settings.');
 const materials={},textures={};
-for(const key of spec.surfaces){const m=input.materials[key];if(!record(m)||!spec.finishes.includes(m.finish)||!/^#[0-9a-f]{6}$/i.test(m.tint))bad('Invalid finish for '+key);materials[key]={finish:m.finish,tint:m.tint,roughness:number(m.roughness,.1,1,'roughness'),scale:number(m.scale,.25,4,'texture scale')};
-if(input.textures[key]!==undefined){const data=input.textures[key];if(typeof data!=='string'||data.length>1500000||!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(data))bad('Invalid texture for '+key);textures[key]=data;}}
+for(const key of spec.surfaces){const missing=input.materials[key]===undefined;const parent=spec.surfaceParents?.[key];const m=missing?(parent?input.materials[parent]:spec.surfaceDefaults?.[key]):input.materials[key];if(!record(m)||!spec.finishes.includes(m.finish)||!/^#[0-9a-f]{6}$/i.test(m.tint))bad('Invalid finish for '+key);materials[key]={finish:m.finish,tint:m.tint,roughness:number(m.roughness,.1,1,'roughness'),scale:number(m.scale,.25,4,'texture scale')};
+const texture=input.textures[key]??(missing&&parent&&input.textures[parent]!==undefined?'@'+parent:undefined);if(texture!==undefined){const data=texture;if(typeof data!=='string'||data.length>1500000||(!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(data)&&!(data.startsWith('@')&&spec.surfaces.includes(data.slice(1)))))bad('Invalid texture for '+key);textures[key]=data;}}
+for(const key of Object.keys(textures))resolveDesignTexture(textures,key);
 const ids=new Set(spec.furnitureIds);if(!Array.isArray(input.furniture)||input.furniture.length!==ids.size)bad('The furniture list does not match this apartment.');
 const furniture=input.furniture.map(item=>{if(!record(item)||!ids.delete(item.id))bad('Unknown or duplicate furniture item');return{id:item.id,x:number(item.x,-2,16,'furniture X'),z:number(item.z,-2,11,'furniture Y'),angle:number(item.angle,-100*Math.PI,100*Math.PI,'rotation')};});
 const ceilings={box:number(input.ceilings.box,2.4,3.4,'box ceiling'),main:number(input.ceilings.main,3.5,4.5,'main ceiling')};
@@ -19,3 +20,10 @@ if(JSON.stringify(result).length>MAX_DESIGN_BYTES)bad('This design is too large 
 return result;
 }
 export function designFingerprint(design){return JSON.stringify({materials:design.materials,textures:design.textures,furniture:design.furniture,ceilings:design.ceilings});}
+
+// References preserve a formerly shared texture without duplicating it per wall.
+export function resolveDesignTexture(textures,key){
+const seen=new Set();let data=textures[key];
+while(typeof data==='string'&&data.startsWith('@')){if(seen.has(key))throw new Error('Cyclic texture reference');seen.add(key);key=data.slice(1);data=textures[key];}
+if(typeof data!=='string'||!data.startsWith('data:image/'))throw new Error('Missing texture reference');return data;
+}
