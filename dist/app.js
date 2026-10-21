@@ -1,7 +1,7 @@
-import {nextSurfaceSelection,rememberColour,selectionGeometry} from './surface-editor.js';
-import {configureTiles} from './surface-materials.js';
-import {createWalkthrough,buildWalkPoints} from './walkthrough.js';
-import {DESIGN_FORMAT,MAX_DESIGN_BYTES,validateDesign,designFingerprint,resolveDesignTexture} from './design-format.js';
+import {nextSurfaceSelection,rememberColour,selectionGeometry} from './surface-editor.js?v=190446662ae7';
+import {configureTiles} from './surface-materials.js?v=190446662ae7';
+import {createWalkthrough,buildWalkPoints} from './walkthrough.js?v=190446662ae7';
+import {DESIGN_FORMAT,MAX_DESIGN_BYTES,validateDesign,designFingerprint,resolveDesignTexture} from './design-format.js?v=190446662ae7';
 import * as THREE from 'three';
 import {OrbitControls} from './vendor/OrbitControls.js';
 const $=id=>document.getElementById(id), wrap=$('canvas-wrap');

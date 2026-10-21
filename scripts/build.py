@@ -1,8 +1,20 @@
 #!/usr/bin/env python3
 """Build the portable root page from editable dist sources (no external packages)."""
-import base64,json,pathlib,re
+import base64,hashlib,json,pathlib,re
 repo=pathlib.Path(__file__).resolve().parents[1]
 root=repo/'dist'
+# Version local modules too: WebViews may otherwise keep stale module responses.
+local_sources=sorted(root.glob('*.js'))+[root/'style.css',root/'index.html']
+normalize=lambda text:re.sub(r'\?v=[0-9a-f]{12}', '', text)
+version=hashlib.sha256(''.join(normalize(p.read_text()) for p in local_sources).encode()).hexdigest()[:12]
+for source in root.glob('*.js'):
+    text=normalize(source.read_text())
+    updated=re.sub(r"from '(\./[^/'?]+\.js)'",lambda m:"from '"+m[1]+"?v="+version+"'",text)
+    if source.read_text()!=updated:source.write_text(updated)
+entry=root/'index.html'
+text=normalize(entry.read_text())
+text=re.sub(r'((?:src|href)=")((?:app|shared-sync)\.js|style\.css)(")',lambda m:m[1]+m[2]+'?v='+version+m[3],text)
+if entry.read_text()!=text:entry.write_text(text)
 three=(root/'vendor/three.module.js').read_text()
 match=re.search(r'export\s*\{([^}]+)\};?\s*$',three)
 assert match,'Three.js export block missing'
@@ -20,7 +32,7 @@ surface_code='\n'.join((root/name).read_text().replace('export ','') for name in
 app=re.sub(r'^import .*?;\n','',(root/'app.js').read_text(),flags=re.M)
 js='(()=>{const THREE=(()=>{'+three+'})();const OrbitControls=(()=>{'+orbit+'})();'+format_code+'\n'+surface_code+'\n'+walk_code+'\n'+app+'})();'
 css='\n'.join(line for line in (root/'style.css').read_text().splitlines() if not line.startswith('@import'))
-html=(root/'index.html').read_text().replace('<link rel="stylesheet" href="style.css">','<style>'+css+'</style>')
+html=normalize((root/'index.html').read_text()).replace('<link rel="stylesheet" href="style.css">','<style>'+css+'</style>')
 html=re.sub(r'<script type="importmap">.*?</script>','',html)
 image='data:image/png;base64,'+base64.b64encode((root/'plan.png').read_bytes()).decode()
 html=html.replace('src="plan.png"','src="'+image+'"')
